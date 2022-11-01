@@ -24,4 +24,7 @@ Other Files:
 S288C-masked-genome.fasta
 	The masked genome of the common laboratory strain S288C. This genome is used as a reference against the strain specific SNPs described in the previous text file.
 	
-Two example figures generated using this analysis pipeline
+Figure 1.png
+Figure 2.png
+Figure 3.png
+Three example figures generated using this analysis pipeline
