@@ -1,0 +1,159 @@
+"""
+Running Directions:
+    create environment (choose a name):
+    conda env create --name snakemaker --file environment.yaml
+    then activate:
+    conda activate snakemaker
+
+    Navigate to snakemake directory in ubuntu:
+    example: cd /mnt/f/snakemake
+
+    Dry Run example:
+    snakemake -np {file}.noSNP.var
+    full run:
+    snakemake {file}.noSNP.var
+
+Snakemake Multi-cores note, specify:
+ snakemake -j 4
+ or just 'snakemake -j' to have it select the number
+"""
+
+# To run multiple samples, add to below list (or process and import) and enable line:
+# SAMPLES = ['MutVol-C10-2-2','MutVol-C10-2-4']
+
+# This rule enables the SAMPLES input to allow for multipe files to be processed:
+rule all:
+    input:
+        expand('{sample}.noSNP.var', sample=SAMPLES)
+
+rule bwa_map:
+    input:
+        "data/S288C-masked-genome.fasta",
+        "data/samples/{sample}_R1_001.fastq",
+        "data/samples/{sample}_R2_001.fastq"
+    output:
+        "tmp/{sample}_pe.unique_sorted.bam"
+    threads: 8 #Optional command to direct the number of cores to use.
+    shell:
+        "bwa mem {input} | "
+        "samblaster -M -d discordant_{wildcards.sample}.disc.sam -s split_{wildcards.sample}.split.sam | "
+        "grep -v SA:Z |grep -v XA: | "
+        "samtools view -Sb -q 10 - |samtools sort > {output}" #no need for the -o on this line before output
+
+
+"""Note: installed samblaster with conda install -c bioconda samblaster not pip install Samblaster      {version 0.1.24}
+    Installed picard tools with the same command (conda install -c bioconda picard)
+
+    snakemake -np tmp/IanWSAge-4-o1_pe.fixedhdr.bam
+    snakemake tmp/IanWSAge-4-o1_pe.fixedhdr.bam
+    """
+
+rule picard_readgroup:
+    input:
+        "tmp/{sample}_pe.unique_sorted.bam"
+    output:
+        "tmp/{sample}_pe.fixedhdr.bam"
+    shell:
+        "picard AddOrReplaceReadGroups I={input} O={output} RGID=1 RGLB=1 RGPL=ILLUMINA RGPU=TTAATA RGSM={wildcards.sample} VALIDATION_STRINGENCY=LENIENT"
+
+rule samtools_index:
+    input:
+        "tmp/{sample}_pe.fixedhdr.bam"
+    output:
+        "tmp/{sample}_pe.fixedhdr.bam.bai"
+    shell:
+        "samtools index {input} > {output}"
+
+rule picard_dict:
+    input:
+        "data/S288C-masked-genome.fasta"
+    output:
+        "data/S288C-masked-genome.dict"
+    shell:
+        "picard CreateSequenceDictionary R={input} O={output}"
+        # Higher version of Picard require the following line:
+        # "picard CreateSequenceDictionary -R {input} -O {output}"
+
+rule gatk_realign:
+    input:  bam = "tmp/{sample}_pe.fixedhdr.bam",
+            bai = "tmp/{sample}_pe.fixedhdr.bam.bai", #not an input directly, but needed. This command ensures the file is created
+            genome = "data/S288C-masked-genome.fasta"
+    output:
+        "tmp/{sample}.intervals"
+    shell:
+        # Needs GATK 3.7 in the working directory (newer versions will need to revisit this line)
+        # java -jar GenomeAnalysisTK.jar -h
+        "/usr/lib/jvm/java-8-openjdk-amd64/jre/bin/java -jar /mnt/f/linwinfileshare/GATK3/GenomeAnalysisTK.jar -T RealignerTargetCreator -I {input.bam} -R {input.genome} -o {output}"
+
+rule gatk_indelrealign:
+    input:  bam = "tmp/{sample}_pe.fixedhdr.bam",
+            genome = "data/S288C-masked-genome.fasta",
+            intervals = "tmp/{sample}.intervals"
+    output:
+        "tmp/{sample}_pe-realigned.bam"
+    shell:
+        "/usr/lib/jvm/java-8-openjdk-amd64/jre/bin/java -jar /mnt/f/linwinfileshare/GATK3/GenomeAnalysisTK.jar -T IndelRealigner -R {input.genome} -I {input.bam} -targetIntervals {input.intervals} -o {output}"
+
+rule gatk_leftalign:
+    input:  bam = "tmp/{sample}_pe-realigned.bam",
+            genome = "data/S288C-masked-genome.fasta",
+            intervals = "tmp/{sample}.intervals"
+    output:
+        "tmp/{sample}_pe-leftaligned.bam"
+    shell:
+        "/usr/lib/jvm/java-8-openjdk-amd64/jre/bin/java -jar /mnt/f/linwinfileshare/GATK3/GenomeAnalysisTK.jar -T LeftAlignIndels -R {input.genome} -I {input.bam} -o {output}"
+        # java -Xmx1g -jar ~/Bioinformatics/programs/GATK/GenomeAnalysisTK.jar -T LeftAlignIndels -R {input.genome} -I {input.bam} -o tmp/${strain}_pe-leftaligned.bam
+
+rule gatk_baserecalibrator:
+    input:  bam = "tmp/{sample}_pe-leftaligned.bam",
+            genome = "data/S288C-masked-genome.fasta",
+            knownsites =  "data/BY4741-diploid_snp_sorted_final.vcf"
+    output:
+        "tmp/{sample}_pe-recalibrated.grp"
+    shell:
+        "/usr/lib/jvm/java-8-openjdk-amd64/jre/bin/java -jar /mnt/f/linwinfileshare/GATK3/GenomeAnalysisTK.jar -T BaseRecalibrator -I {input.bam} -R {input.genome} -knownSites {input.knownsites} -o {output}"
+# java -Xmx1g -jar ~/Bioinformatics/programs/GATK/GenomeAnalysisTK.jar -T BaseRecalibrator -I tmp/${strain}_pe-leftaligned.bam -R ${REFPATH}/yeast/S288C-masked-genome.fasta -knownSites ${REFPATH}/yeast/BY4741-diploid_snp_sorted_final.vcf -o tmp/${strain}_pe-recalibrated.grp
+rule gatk_printreads:
+    input:  bam = "tmp/{sample}_pe-leftaligned.bam",
+            genome = "data/S288C-masked-genome.fasta",
+            grp =  "tmp/{sample}_pe-recalibrated.grp"
+    output:
+        "{sample}_pe-recalibrated.bam"
+    shell:
+        "/usr/lib/jvm/java-8-openjdk-amd64/jre/bin/java -jar /mnt/f/linwinfileshare/GATK3/GenomeAnalysisTK.jar -T PrintReads -R {input.genome} -I {input.bam} -BQSR {input.grp} -o {output}"
+
+
+rule mpileup:
+    input:  bam = "{sample}_pe-recalibrated.bam",
+            genome = "data/S288C-masked-genome.fasta"
+    output:
+        "{sample}_pe.mpileup"
+    threads: 8
+    shell:
+        "samtools mpileup -Bf {input.genome} {input.bam} > {output}"
+	    # samtools mpileup -Bf $REFPATH/yeast/S288C-masked-genome.fasta ${strain}_pe-recalibrated.bam > ${strain}_pe.mpileup
+
+"""Just using the java .jar file of var scan downloaded from the site directly for now (bioconda install failed)
+    """
+rule mpileup2snp:
+    input:  pileup = "{sample}_pe.mpileup",
+            genome = "data/AH0401.snp"
+    output:
+        "{sample}.noSNP.var"
+    shell:
+        "java -jar /mnt/f/linwinfileshare/VarScan/VarScan.v2.3.7.jar mpileup2snp {input.pileup} --min-coverage 18 "
+        "--min-var-freq .22 --strand-filter 1 "
+        # > {output}"
+        "|python /mnt/f/linwinfileshare/variant_deSNPer2013a.py "
+        "-s {input.genome} > {output}"
+
+rule mpileup2indel:
+    input:  pileup = "{sample}_pe.mpileup",
+            genome = "data/AH0401indel.snp"
+    output:
+        "{sample}.no-indelSNP.var"
+    shell:
+        "java -jar /mnt/f/linwinfileshare/VarScan/VarScan.v2.3.7.jar mpileup2indel {input.pileup} --min-coverage 18 "
+        "--min-var-freq .3 --strand-filter 1 |"
+        "python /mnt/f/linwinfileshare/variant_deSNPer2013a.py "
+        "-s {input.genome} > {output}"

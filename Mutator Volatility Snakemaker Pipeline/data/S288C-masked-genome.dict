@@ -1,0 +1,18 @@
+@HD	VN:1.6
+@SQ	SN:ref|NC_001133|	LN:230218	M5:bc0e000ed1d86ace77297f27d4123bf5	UR:file:/mnt/c/linwinfileshare/SnakeMake-Test/data/S288C-masked-genome.fasta
+@SQ	SN:ref|NC_001134|	LN:813184	M5:acaa2562cc51f41be43cb3556b0faf5a	UR:file:/mnt/c/linwinfileshare/SnakeMake-Test/data/S288C-masked-genome.fasta
+@SQ	SN:ref|NC_001135|	LN:316620	M5:3da31fc9084aa6ae6241e0fe774b0b88	UR:file:/mnt/c/linwinfileshare/SnakeMake-Test/data/S288C-masked-genome.fasta
+@SQ	SN:ref|NC_001136|	LN:1531933	M5:8a95452d6c90150adeca2c7b30747b65	UR:file:/mnt/c/linwinfileshare/SnakeMake-Test/data/S288C-masked-genome.fasta
+@SQ	SN:ref|NC_001137|	LN:576874	M5:a98c87a200123b708545c8b76ad3e477	UR:file:/mnt/c/linwinfileshare/SnakeMake-Test/data/S288C-masked-genome.fasta
+@SQ	SN:ref|NC_001138|	LN:270161	M5:8da012e3cb73a1a041d240759a014f14	UR:file:/mnt/c/linwinfileshare/SnakeMake-Test/data/S288C-masked-genome.fasta
+@SQ	SN:ref|NC_001139|	LN:1090940	M5:de14dd6b655b554bd22b1fde720e0a73	UR:file:/mnt/c/linwinfileshare/SnakeMake-Test/data/S288C-masked-genome.fasta
+@SQ	SN:ref|NC_001140|	LN:562643	M5:6bf890e2648cbf879df25af054abbde5	UR:file:/mnt/c/linwinfileshare/SnakeMake-Test/data/S288C-masked-genome.fasta
+@SQ	SN:ref|NC_001141|	LN:439888	M5:871aea24991798a83f6025395155c201	UR:file:/mnt/c/linwinfileshare/SnakeMake-Test/data/S288C-masked-genome.fasta
+@SQ	SN:ref|NC_001142|	LN:745751	M5:d564f0583e4f6b04e52bcd0b617a9bf9	UR:file:/mnt/c/linwinfileshare/SnakeMake-Test/data/S288C-masked-genome.fasta
+@SQ	SN:ref|NC_001143|	LN:666816	M5:d4610418a5a4ecfecbebc03c6ec758b6	UR:file:/mnt/c/linwinfileshare/SnakeMake-Test/data/S288C-masked-genome.fasta
+@SQ	SN:ref|NC_001144|	LN:1078177	M5:a25ae33f032a417c795f3ccdedc8159f	UR:file:/mnt/c/linwinfileshare/SnakeMake-Test/data/S288C-masked-genome.fasta
+@SQ	SN:ref|NC_001145|	LN:924431	M5:89986927bcc0f353598366984ddcd6c8	UR:file:/mnt/c/linwinfileshare/SnakeMake-Test/data/S288C-masked-genome.fasta
+@SQ	SN:ref|NC_001146|	LN:784333	M5:ffc7b58cc71aa4d1fe96c8d8f2be4833	UR:file:/mnt/c/linwinfileshare/SnakeMake-Test/data/S288C-masked-genome.fasta
+@SQ	SN:ref|NC_001147|	LN:1091291	M5:af3af37ba668281cfaa48762f24ee7e0	UR:file:/mnt/c/linwinfileshare/SnakeMake-Test/data/S288C-masked-genome.fasta
+@SQ	SN:ref|NC_001148|	LN:948066	M5:5a830ef63de6a0bb48d3208a2ce0257a	UR:file:/mnt/c/linwinfileshare/SnakeMake-Test/data/S288C-masked-genome.fasta
+@SQ	SN:Mito	LN:85779	M5:501f0c582456e0c056dea18c227aa14f	UR:file:/mnt/c/linwinfileshare/SnakeMake-Test/data/S288C-masked-genome.fasta
