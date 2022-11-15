@@ -12,7 +12,7 @@ Order of Scripts:
 Snakemake > Produces noSNP.var files
 LOHsearch.py > Turns noSNP.var files into LOH calls in 2 text files
 LOHcompiler.py > Produces a single text file for all generated LOH files, across all lines or strains
-LOHgraphing.py > uses the above input to produce a graphic image (.png) illustrated all detected LOH events for a single experiment type
+LOHgraphing.py > uses the above input to produce a graphic image (.png) depicting all detected LOH events for a single experiment type
 
 ID note 11/1/2022: These scripts were last used in December of 2020, if needed again they could all easily be folded into the single existing Snakemake pipeline.
 Originally kept separate for debugging purposes. Evaluate on future use.
